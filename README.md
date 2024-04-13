@@ -1,5 +1,5 @@
 # Solución de EDO por el método de Euler
-## React.js + Flask S + Tailwind CSS
+## React.js + Flask + Tailwind CSS
 
 ![alt text](public/example.png)
 
