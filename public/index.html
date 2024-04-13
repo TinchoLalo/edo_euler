@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+
+	<title>Resolucion EDO método de Euler</title>
+
+	<link rel='icon' type='image/png' href='/favicon.png'>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<html>
+<body>
+  <div id="root"></div>
+</body>
+<!-- This setup is not suitable for production. -->
+<!-- Only use it in development! -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.7.0/dist/es-module-shims.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react?dev",
+    "react-dom/client": "https://esm.sh/react-dom/client?dev"
+  }
+}
+</script>
+
+<!-- ========================= REACT JS ========================= -->
+<script type="text/babel" data-type="module">
+import React, { StrictMode, useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+
+
+// Componente inicial que contiene al resto
+function Main({  }) {
+  const [solution, setSolution] = useState(null);
+
+  const solveEDO = (formData) => {
+    setSolution(formData);
+    console.log(solution);
+    console.log(solution.edo);
+  };
+  return (
+    <div class="grid grid-cols-2 gap-4">
+      <div class="h-screen">
+        <h1>CALCULADORA</h1>
+
+        <Form onSolve={solveEDO} />
+        {solution && <Calculate formData={solution}/>}
+        
+      </div>
+
+      <div class="bg-gray-100 h-screen">
+        <h1>EJERCICIOS PROPUESTOS</h1>
+        <h2>Ejercicio 1</h2>
+        <h3>Considera el problema con valor inicial dy/dx= 0,2 · x · y con y(1) = 1. Usa el programita para aproximar y(1.5) usando primero un paso de 0.1 y luego de 0.05</h3>
+        <Math paso="0.1" x0="1.5" y0="1.0" exercise="edo1/a" />
+        <Math paso="0.05" x0="1.5" y0="1.0" exercise="edo1/b" />
+
+        <h2>Ejercicio 2</h2>
+        <h3>Considera un circuito simple donde la resistencia es 12 Ω, la inductancia es 4 H y la batería
+          da un voltaje constante de 60 V. Si el interruptor esta cerrado cuando t = 0, se modela la corriente I en el tiempo t mediante el problema con valores iniciales dI/dt= 15-3·I, I(0) = 0.
+          Estima la corriente en el circuito medio segundo despues de que se cierra el interruptor.
+        </h3>
+        <Math paso="0.01" x0="0.5" y0="0.5" exercise="edo2/a" />
+      </div>
+      <h4 class="absolute bottom-px text-center mx-auto inset-x-0 font-black text-2xl text-sky-800">Martín La Loggia</h4>
+    </div>
+  );
+}
+
+// Obtener los ejercicios propuestos desde el backend en Python
+function Math({ paso, x0, y0, exercise}) {
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/${exercise}`, {
+          params: {
+            x0: x0,
+            y0: y0,
+            h: paso  
+          }
+        });
+        setResult(response.data.result);
+      } catch (error) {
+        console.error('Error al calcular:', error);
+      }
+    };
+    fetchData();
+  }, [exercise, x0, y0, paso]);
+  return (
+    <>
+    <h3 class="text-2xl">Con paso de <b>{paso}</b></h3>
+    <div class="m-4 mx-16  bg-white rounded-lg border-black p-6 flex">
+      <h4 class="font-bold text-2xl flex-initial"><b class="italic font-sans">y</b> ({x0}) =</h4>
+      <h5 class="text-2xl text-sky-700 flex-initial ml-4">{result}</h5>
+    </div>
+    </>
+  )
+}
+
+// Componente que muestra el resultado de calcular una EDO con valor inicial y paso definido por el método EULER
+function Calculate({ formData}) {
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.post(`http://localhost:5000/calculate`, formData)
+        .then(response => {
+          console.log('Resultado:', response.data.result);
+          setResult(response.data.result);
+         
+        })
+        .catch(error => {
+          console.error('Error al calcular:', error);
+          setResult("error de calculo");
+        });
+
+      } catch (error) {
+        setResult("error");
+        console.error('Error al calcular:', error);
+      }
+    };
+    fetchData();
+  }, [formData]);
+  return (
+    <>
+    <h3 class="text-2xl">Con paso de <b>{formData.stepSize}</b></h3>
+    <div class="m-4 mx-16  bg-white rounded-lg border-black p-6 flex">
+      <h4 class="font-bold text-2xl flex-initial"><b class="italic font-sans">y</b> ({formData.targetX}) =</h4>
+      <h5 class="text-2xl text-sky-700 flex-initial ml-4">{result}</h5>
+    </div>
+    </>
+  )
+}
+
+// Componente para obtener los datos necesarios para resolver una EDO con el método de Euler
+function Form({ onSolve }) {
+  const [edo, setEdo] = useState('');
+  const [initialValue, setInitialValue] = useState('');
+  const [stepSize, setStepSize] = useState('');
+  const [targetX, setTargetX] = useState('');
+  const [y, setY] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = {
+      edo,
+      initialValue: parseFloat(initialValue),
+      stepSize: parseFloat(stepSize),
+      targetX: parseFloat(targetX),
+      y: parseFloat(y)
+    };
+    onSolve(formData);
+  };
+
+  return (
+    <div className="mx-16 mt-6">
+      <form onSubmit={handleSubmit} className="bg-white shadow-md px-8 pt-6 pb-8 mb-4 rounded-xl bg-blend-color-burn backdrop-opacity-10">
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="edo">
+            Ecuación Diferencial Ordinaria (EDO)
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="edo"
+            type="text"
+            placeholder="Ingrese la EDO (por ejemplo, 2*x*y)"
+            value={edo}
+            onChange={(e) => setEdo(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="initialValue">
+            Valor Inicial para y
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="initialValue"
+            type="text"
+            placeholder="Ingrese el valor inicial"
+            value={initialValue}
+            onChange={(e) => setInitialValue(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="stepSize">
+            Tamaño del Paso 
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="stepSize"
+            type="number"
+            placeholder="Ingrese el tamaño del paso (h=0.1) solo ingrese el numero"
+            value={stepSize}
+            onChange={(e) => setStepSize(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="targetX">
+            Valor de x Inicial
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="targetX"
+            type="number"
+            placeholder="Ingrese el valor de x inicial"
+            value={targetX}
+            onChange={(e) => setTargetX(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="y">
+            Valor de x hasta donde se desea aproximar
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="y"
+            type="number"
+            placeholder="Ingrese el valor de x final (ej: y(1.5) debe ingresar 1.5)"
+            value={y}
+            onChange={(e) => setY(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <button
+            className="bg-sky-500 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
+            type="submit"
+          >
+            Resolver EDO
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+//  creamos la app que en este caso esta toda contenida en un solo componente llamado Main
+let App = function App() {
+  return <Main/>
+}
+
+// Cargamos todos los componentes en el root
+const root = createRoot(document.getElementById('root'));
+root.render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+</script>
+
+
+<!-- ========================= STYLES ========================= -->
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: sans-serif;
+    padding: 0;
+    background-color: rgb(248, 248, 248);
+    height: 100vh;
+  }
+  
+  h1 {
+    font-size: 3rem;
+    color: rgb(30 27 75);
+    margin: auto;
+    margin-top: 2rem;
+    text-align: center;
+  }
+  
+  h2 {
+    margin-top: 2rem;
+    font-size: 1.7rem;
+    margin-left: 2rem;
+    font-weight: 600;
+  }
+  
+  h3 {
+    margin: 1rem;
+    font-size: 1.3rem;
+  }
+  
+  h4 {
+    margin-top: 0;
+    font-size: 16px;
+  }
+  
+  h5 {
+    margin-top: 0;
+    font-size: 14px;
+  }
+  
+  h6 {
+    margin-top: 0;
+    font-size: 12px;
+  }
+  
+  code {
+    font-size: 1.2em;
+  }
+  
+  ul {
+    padding-inline-start: 20px;
+  }
+  
+  
+</style>
+
+</html>
