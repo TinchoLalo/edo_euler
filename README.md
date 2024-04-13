@@ -8,15 +8,19 @@ Pasos para poder ejecutar el servidor:
 
 Descargar Flask:
 - `pip install flask`
+
 Descargar la librería sympy:
 - `pip install sympy`
+
 Por último descargar CORS:
 - `pip install flask_cors`
-O puedes instalar todo junto:
-pip install flask flask_cors sympy
 
-Ejecuta:
-- `python server.py` para inicializar el servidor.
+O puedes instalar todo junto:
+- `pip install flask flask_cors sympy`
+
+Para inicializar el servidor ejecuta:
+- `python server.py` 
+
 Si dicho comando no funciona prueba con:
 - `python3 server.py`
 
