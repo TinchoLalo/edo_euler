@@ -69,15 +69,15 @@ def edo2_a():
         return 15 - 3 * I0
     
     # Valores iniciales
-    x0 = 0.5
+    t = 0
     y0 = I0
 
     # Paso 
-    h = 0.01 # paso del tiempo
+    h = 0.001 # paso del tiempo
     n = int(0.5 / h)  # Número de pasos para medio segundo
 
     # Resolver
-    solution = euler_method(f, x0, y0, h, n)
+    solution = euler_method(f, t, y0, h, n)
     result = solution[-1][1]  
     return jsonify({'result': result})
 
