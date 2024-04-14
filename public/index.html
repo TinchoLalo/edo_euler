@@ -43,8 +43,8 @@ function Main({  }) {
     console.log(solution.edo);
   };
   return (
-    <div class="grid grid-cols-2 gap-4 overflow-y-hidden ">
-      <div class="h-screen overflow-y-scroll">
+    <div class="sm">
+      <div class="h-screen wd">
         <h1>CALCULADORA</h1>
 
         <Form onSolve={solveEDO} />
@@ -52,7 +52,7 @@ function Main({  }) {
         
       </div>
 
-      <div class="bg-gray-100 h-screen overflow-y-scroll ">
+      <div class="bg-gray-100 h-screen wd">
         <h1>EJERCICIOS PROPUESTOS</h1>
         <h2>Ejercicio 1</h2>
         <h3>Considera el problema con valor inicial dy/dx= 0,2 · x · y con y(1) = 1. Usa el programita para aproximar y(1.5) usando primero un paso de 0.1 y luego de 0.05</h3>
@@ -292,6 +292,30 @@ root.render(
     margin: 1rem;
     font-size: 1.3rem;
   }
+  .sm {
+    display: flex;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem; 
+    overflow-y: hidden;
+  }
+  .wd {
+    width: 50%;
+    overflow-y: scroll;
+  }
+  @media screen and (max-width: 700px) {
+    .sm {
+      display: block;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem; 
+      overflow-y:visible;
+    }
+    .wd {
+      width: 100%;
+      overflow-y:hidden;
+    }
+    
+  }
+  
 </style>
 
 </html>
