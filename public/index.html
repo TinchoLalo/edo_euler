@@ -86,6 +86,7 @@ function Math({ paso, x0, y0, exercise}) {
           }
         });
         setResult(response.data.result);
+        console.log(response);
       } catch (error) {
         console.error('Error al calcular:', error);
       }
@@ -132,7 +133,7 @@ function Calculate({ formData}) {
     <>
     <h3 class="text-2xl">Con paso de <b>{formData.stepSize}</b></h3>
     <div class="m-4 mx-16  bg-white rounded-lg border-black p-6 flex">
-      <h4 class="font-bold text-2xl flex-initial"><b class="italic font-sans">y</b> ({formData.targetX}) =</h4>
+      <h4 class="font-bold text-2xl flex-initial"><b class="italic font-sans">y</b> ({formData.y}) =</h4>
       <h5 class="text-2xl text-sky-700 flex-initial ml-4">{result}</h5>
     </div>
     </>
