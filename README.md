@@ -3,8 +3,9 @@
 
 ![alt text](public/exampleScreen.png)
 
-Desarrollé un servidor/cliente con Python utilizando la librería Flask para correr el servidor y en el cliente utilizo React como librería para las funciones de JS y la creación de componentes reactivos y, junto con Tailwind CSS, puedo dar estilos de manera más sensilla sin tener que escribir CSS como tal. De esta manera logré hacer un sitio sencillo para mostrar los ejercicios y poder resolver EDOs con el método de Euler, el cual nos dá una solución numérica de una EDO con valor inicial.
+Desarrollé un servidor/cliente con Python utilizando la librería Flask para correr el servidor y en el cliente utilizo React como librería para las funciones de JS que realizan las peticiones al server y para la creación de componentes reactivos y, junto con Tailwind CSS, puedo dar estilos de manera más sensilla sin tener que escribir CSS como tal. De esta manera logré hacer un sitio sencillo para mostrar los ejercicios y poder resolver EDOs con el método de Euler, el cual nos dá una solución numérica de una EDO con valor inicial.
 
+Este año le actualicé algunas cosas, como correcciones de algunos errores o cosas redundantes en el código. Además añadí para mostrar todos los pasos de como se va resolviendo el problema.
 
 Pasos para poder ejecutar el servidor:
 
