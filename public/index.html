@@ -39,12 +39,11 @@ function Main({  }) {
 
   const solveEDO = (formData) => {
     setSolution(formData);
-    console.log(solution);
-    console.log(solution.edo);
+
   };
   return (
-    <div class="sm">
-      <div class="h-screen wd">
+    <div className="sm flex">
+      <div className="h-screen wd">
         <h1>CALCULADORA</h1>
 
         <Form onSolve={solveEDO} />
@@ -52,38 +51,38 @@ function Main({  }) {
         
       </div>
 
-      <div class="bg-gray-100 h-screen wd">
+      <div className="bg-gray-100 h-screen wd">
         <h1>EJERCICIOS PROPUESTOS</h1>
         <h2>Ejercicio 1</h2>
         <h3>Considera el problema con valor inicial dy/dx= 0,2 · x · y con y(1) = 1. Usa el programita para aproximar y(1.5) usando primero un paso de 0.1 y luego de 0.05</h3>
-        <Math paso="0.1" x0="1.5" y0="1.0" exercise="edo1/a" />
-        <Math paso="0.05" x0="1.5" y0="1.0" exercise="edo1/b" />
+        <Exercise paso="0.1" x0="1.5" y0="1.0" exercise="edo1/a" />
+        <Exercise paso="0.05" x0="1.5" y0="1.0" exercise="edo1/b" />
 
         <h2>Ejercicio 2</h2>
         <h3>Considera un circuito simple donde la resistencia es 12 Ω, la inductancia es 4 H y la batería
           da un voltaje constante de 60 V. Si el interruptor esta cerrado cuando t = 0, se modela la corriente I en el tiempo t mediante el problema con valores iniciales dI/dt= 15-3·I, I(0) = 0.
           Estima la corriente en el circuito medio segundo despues de que se cierra el interruptor.
         </h3>
-        <Math paso="0.01" x0="0.5" y0="0.5" exercise="edo2/a" />
+        <Exercise paso="0.001" x0="0.5" y0="0.5" exercise="edo2/a" />
+        <h4 className="text-center font-black text-2xl text-sky-800 left-0 right-0 absolute md:bottom-0">
+          Martín La Loggia
+        </h4>
       </div>
-      <h4 class="absolute bottom-px text-center mx-auto inset-x-0 font-black text-2xl text-sky-800">Martín La Loggia</h4>
+      
+       
     </div>
   );
 }
 
 // Obtener los ejercicios propuestos desde el backend en Python
-function Math({ paso, x0, y0, exercise}) {
+function Exercise({ paso, x0, y0, exercise}) {
   const [result, setResult] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/${exercise}`, {
-          params: {
-            x0: x0,
-            y0: y0,
-            h: paso  
-          }
+          
         });
         setResult(response.data.result);
         console.log(response);
@@ -94,13 +93,13 @@ function Math({ paso, x0, y0, exercise}) {
     fetchData();
   }, [exercise, x0, y0, paso]);
   return (
-    <>
-    <h3 class="text-2xl">Con paso de <b>{paso}</b></h3>
-    <div class="m-4 mx-16  bg-white rounded-lg border-black p-6 flex">
-      <h4 class="font-bold text-2xl flex-initial"><b class="italic font-sans">y</b> ({x0}) =</h4>
-      <h5 class="text-2xl text-sky-700 flex-initial ml-4">{result}</h5>
+    <div className="w-[90%] mx-auto">
+    <h3 className="text-2xl">Con paso de <b>{paso}</b></h3>
+    <div className="m-4 mx-auto px-2 bg-white rounded-lg border-black py-6 flex">
+      <h4 className="font-bold text-lg md:text-2xl flex-initial ml-2"><b className="italic font-sans">y</b> ({x0}) =</h4>
+      <h5 className="text-lg md:text-2xl text-sky-700 flex-initial ml-4">{result}</h5>
     </div>
-    </>
+  </div>
   )
 }
 
@@ -127,14 +126,34 @@ function Calculate({ formData}) {
         console.error('Error al calcular:', error);
       }
     };
+
     fetchData();
   }, [formData]);
+
+  const lastValue = Array.isArray(result) && result.length > 0 
+    ? result[result.length - 1][1] 
+    : "No hay datos";
+
   return (
     <>
-    <h3 class="text-2xl">Con paso de <b>{formData.stepSize}</b></h3>
-    <div class="m-4 mx-16  bg-white rounded-lg border-black p-6 flex">
-      <h4 class="font-bold text-2xl flex-initial"><b class="italic font-sans">y</b> ({formData.y}) =</h4>
-      <h5 class="text-2xl text-sky-700 flex-initial ml-4">{result}</h5>
+    <h3 className="text-2xl">Con paso de <b>{formData.stepSize}</b></h3>
+    <div className="m-4 mx-16  bg-white rounded-lg border-black p-6 flex">
+      <h4 className="font-bold text-2xl flex-initial"><b className="italic font-sans">y</b> ({formData.x}) =</h4>
+      <h4 className="font-bold text-2xl flex-initial ml-2">{lastValue}</h4>
+    
+    </div>
+    <div className="space-y-2 w-2/3 mx-auto">
+      {Array.isArray(result) && result.length > 0 ? (
+        result.map((subArray, index) => (
+          <div key={index} className="bg-gray-100 p-2 rounded">
+            <span className="font-bold">Paso {index + 1}: </span>
+            <span>y({parseFloat(subArray[0]).toFixed(2)}) = {subArray[1]}</span>
+            
+          </div>
+        ))
+      ) : (
+        <p>No hay datos disponibles</p>
+      )}
     </div>
     </>
   )
@@ -143,26 +162,26 @@ function Calculate({ formData}) {
 // Componente para obtener los datos necesarios para resolver una EDO con el método de Euler
 function Form({ onSolve }) {
   const [edo, setEdo] = useState('');
-  const [initialValue, setInitialValue] = useState('');
+  const [y0, setY0] = useState('');
   const [stepSize, setStepSize] = useState('');
-  const [targetX, setTargetX] = useState('');
-  const [y, setY] = useState('');
+  const [x0, setX0] = useState('');
+  const [x, setX] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = {
       edo,
-      initialValue: parseFloat(initialValue),
+      y0: parseFloat(y0),
       stepSize: parseFloat(stepSize),
-      targetX: parseFloat(targetX),
-      y: parseFloat(y)
+      x0: parseFloat(x0),
+      x: parseFloat(x),
     };
     onSolve(formData);
   };
 
   return (
-    <div className="mx-16 mt-6">
-      <form onSubmit={handleSubmit} className="bg-white shadow-md px-8 pt-6 pb-8 mb-4 rounded-xl bg-blend-color-burn backdrop-opacity-10">
+    <div className="mx-auto px-4 mt-6 w-full ">
+      <form onSubmit={handleSubmit} className="w-full bg-white shadow-md px-8 pt-6 pb-8 mb-4 rounded-xl bg-blend-color-burn backdrop-opacity-10">
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="edo">
             Ecuación Diferencial Ordinaria (EDO)
@@ -178,16 +197,16 @@ function Form({ onSolve }) {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="initialValue">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="y">
             Valor Inicial para y
           </label>
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="initialValue"
+            id="y"
             type="text"
             placeholder="Ingrese el valor inicial"
-            value={initialValue}
-            onChange={(e) => setInitialValue(e.target.value)}
+            value={y0}
+            onChange={(e) => setY0(e.target.value)}
             required
           />
         </div>
@@ -198,7 +217,7 @@ function Form({ onSolve }) {
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="stepSize"
-            type="number"
+            type="text"
             placeholder="Ingrese el tamaño del paso (h=0.1) solo ingrese el numero"
             value={stepSize}
             onChange={(e) => setStepSize(e.target.value)}
@@ -206,30 +225,30 @@ function Form({ onSolve }) {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="targetX">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="x0">
             Valor de x Inicial
           </label>
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="targetX"
-            type="number"
+            id="x0"
+            type="text"
             placeholder="Ingrese el valor de x inicial"
-            value={targetX}
-            onChange={(e) => setTargetX(e.target.value)}
+            value={x0}
+            onChange={(e) => setX0(e.target.value)}
             required
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="y">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="x">
             Valor de x hasta donde se desea aproximar
           </label>
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="y"
-            type="number"
+            id="x"
+            type="text"
             placeholder="Ingrese el valor de x final (ej: y(1.5) debe ingresar 1.5)"
-            value={y}
-            onChange={(e) => setY(e.target.value)}
+            value={x}
+            onChange={(e) => setX(e.target.value)}
             required
           />
         </div>
@@ -303,7 +322,7 @@ root.render(
     width: 50%;
     overflow-y: scroll;
   }
-  @media screen and (max-width: 700px) {
+  @media screen and (max-width: 800px) {
     .sm {
       display: block;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -312,6 +331,7 @@ root.render(
     }
     .wd {
       width: 100%;
+      margin: auto;
       overflow-y:visible;
     }
     

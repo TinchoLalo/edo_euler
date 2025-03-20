@@ -1,5 +1,4 @@
-def euler_method(f, x0, y0, h, n):
-    """
+"""
     Implementación del método de Euler para resolver una EDO de primer orden con valor inicial.
     
     Argumentos:
@@ -11,7 +10,10 @@ def euler_method(f, x0, y0, h, n):
     
     Retorna:
     Una lista de tuplas (xi, yi) que representan los valores aproximados de la solución en cada paso.
-    """
+"""
+
+def euler_method(f, x0, y0, x, h):
+    n = int((x - x0) / h)
     result = [(x0, y0)]
     xi = x0
     yi = y0

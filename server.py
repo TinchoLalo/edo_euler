@@ -18,23 +18,26 @@ def home(path):
     return send_from_directory('public', path)
 
 # ========= EJERCICIO 1 =========
+# Resolver la ecuación diferencial dy/dx = 0.2xy, con y(1) = 1, aproximando y(1.5) utilizando un paso de 0.1.
 @app.route("/edo1/a", methods=['GET']) # definimos la ruta y el método
 def edo1_a():
     # Funcion
     def f(x, y):
-        return 0.2 * x * y
+        return 0.2 * x * y 
     # Valores iniciales
-    x0 = 1
-    y0 = 1
+    x0 = 1 # valor de x inicial
+    y0 = 1 # valor de y en x0
+    x = 1.5 # valor de x hasta donde se desea aproximar
 
     # Paso de 0.1
     h = 0.1
-    n = int((1.5 - x0) / h)  # Número de pasos necesario para llegar a x = 1.5
+   
 
     # Resolver
-    solution = euler_method(f, x0, y0, h, n)
+    solution = euler_method(f, x0, y0, x, h )
     result = solution[-1][1]  # Aproximación de y(1.5) con paso de 0.1
     return jsonify({'result': result})
+
 
 # ========= EJERCICIO 1B =========
 @app.route("/edo1/b", methods=['GET'])
@@ -46,17 +49,18 @@ def edo1_b():
     # Valores iniciales
     x0 = 1
     y0 = 1
+    x = 1.5
 
     # Paso de 0.05
     h = 0.05
-    n = int((1.5 - x0) / h)  # Número de pasos necesario para llegar a x = 1.5
 
     # Resolver
-    solution = euler_method(f, x0, y0, h, n)
+    solution = euler_method(f, x0, y0, x, h)
     result = solution[-1][1]  # Aproximación de y(1.5) con paso de 0.05
     return jsonify({'result': result})
 
 # ========= EJERCICIO 2 =========
+# Resolver la ecuación diferencial dI/dt = 15-3I, con I(0) = 0, aproximando I(0.5) utilizando un paso de 0.001
 @app.route("/edo2/a", methods=['GET'])
 def edo2_a():
     # Valores dados en el problema
@@ -69,15 +73,15 @@ def edo2_a():
         return 15 - 3 * I0
     
     # Valores iniciales
-    t = 0
+    t = 0 # I(0) = 0
     y0 = I0
+    x = 0.5
 
     # Paso 
     h = 0.001 # paso del tiempo
-    n = int(0.5 / h)  # Número de pasos para medio segundo
 
     # Resolver
-    solution = euler_method(f, t, y0, h, n)
+    solution = euler_method(f, t, y0, x, h)
     result = solution[-1][1]  
     return jsonify({'result': result})
 
@@ -88,22 +92,21 @@ def calculate():
     # recibimos los datos desde el frontend
     data = request.json
     edo = data['edo']
-    x0 = data['targetX']
-    y0 = data['initialValue']
-    y = data['y']
+    x0 = data['x0']
+    y0 = data['y0']
+    xf = data['x']
     h = data['stepSize']
-    n = int((y - x0) / h) 
     
     # convertimos la EDO que está en formato texto a una función algebráica
     x, y = symbols('x y')
     expr= sympify(edo)
+    
     # Definir la función utilizando lambdify
     f = lambdify((x, y), expr)
     
-    solution = euler_method(f, x0, y0, h, n)
-    result = solution[-1][1]  # Último valor de la solución
-    return jsonify({'result': result})
+    solution = euler_method(f, x0, y0, xf, h)
 
+    return jsonify({'result': solution})
 
 
 if __name__ == "__main__":
