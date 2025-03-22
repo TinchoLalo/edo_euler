@@ -1,7 +1,12 @@
 from flask import Flask, send_from_directory, request, jsonify # librerias necesarias para crear el servidor
 from flask_cors import CORS # CORS
-from sympy import symbols, sympify, lambdify # importamos una libreria para convertir cadenas en funciones
+
+from sympy import symbols, lambdify, sin, cos, exp
+from sympy.parsing.sympy_parser import parse_expr
+import numpy as np
+
 from euler_method import euler_method # importamos la funcion para resolver EDOs
+from preprocess_edo import preprocess_edo
 
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas las rutas
@@ -89,24 +94,33 @@ def edo2_a():
 # ========= CALCULADORA =========
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    # recibimos los datos desde el frontend
-    data = request.json
-    edo = data['edo']
-    x0 = data['x0']
-    y0 = data['y0']
-    xf = data['x']
-    h = data['stepSize']
-    
-    # convertimos la EDO que está en formato texto a una función algebráica
-    x, y = symbols('x y')
-    expr= sympify(edo)
-    
-    # Definir la función utilizando lambdify
-    f = lambdify((x, y), expr)
-    
-    solution = euler_method(f, x0, y0, xf, h)
+    try:
+        data = request.json
+        edo = data['edo']
+        x0 = float(data['x0'])
+        y0 = float(data['y0'])
+        xf = float(data['x'])
+        h = float(data['stepSize'])
+        
+        edo_preprocesado = preprocess_edo(edo)
+        print(f"EDO preprocesada: {edo_preprocesado}")
 
-    return jsonify({'result': solution})
+        # Definir símbolos
+        x, y = symbols('x y')
+        local_dict = {'x': x, 'y': y, 'cos': cos, 'sin': sin, 'exp': exp, 'log': np.log, 'abs': np.abs, 'sqrt': np.sqrt, 'pi': np.pi, 'e': np.e}
+
+        # Convertir la expresión a una función matemática
+        expr = parse_expr(edo_preprocesado, local_dict=local_dict)
+        print(f"Expresión de sympy: {expr}")
+        f = lambdify((x, y), expr, modules=["numpy"])
+
+        # Resolver usando el método de Euler
+        solution = euler_method(f, x0, y0, xf, h)
+
+        return jsonify({'result': solution})
+
+    except Exception as e:
+        return jsonify({'error': f"Ocurrió un error inesperado: {str(e)}"}), 500
 
 
 if __name__ == "__main__":

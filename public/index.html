@@ -36,20 +36,104 @@ import { createRoot } from 'react-dom/client';
 // Componente inicial que contiene al resto
 function Main({  }) {
   const [solution, setSolution] = useState(null);
+  const [guia, setGuia] = useState(false);
 
   const solveEDO = (formData) => {
     setSolution(formData);
 
   };
+
+  function Guia() {
+    return (
+    <div className="w-full mx-auto absolute top-0 left-0 right-0 bottom-0 h-screen justify-center mx-auto bg-black/40 backdrop-blur-[3px]" onClick={() => setGuia(false)}>
+
+      <div className="3xl:w-2/4 w-3/4 mx-auto absolute top-0 left-0 right-0 bottom-0 h-screen justify-center mx-auto bg-white shadow-lg overflow-y-scroll">
+  
+      <p onClick={() => setGuia(false)} className="text-2xl cursor-pointer mx-auto hover:text-sky-500 border-gray-500 border items-center flex justify-center w-10 h-10 rounded-full mt-10">X</p>
+  
+      <h3 className="text-4xl mt-8 mx-auto justify-center text-center">Guía para usar la Calculadora</h3>
+  
+      <div className="m-4 mx-auto px-2 bg-white rounded-lg border-black py-6 flex justify-center w-[80%] bg-gray-200/40 p-8">
+        <p className="p-2">
+          Se debe ingresar la ecuacion diferencial que se desea resolver, el valor de x inicial y el valor de y en x0, el valor de x hasta donde se desea aproximar y el paso de la solucion.
+
+          <br></br>
+          <br></br>
+          <b>Algunos ejemplos:</b>
+          <br></br>
+          <br></br>
+          <div className="flex justify-center items-center flex-rox space-x-4 mt-2">
+            <b className="bg-white rounded-lg border-black p-2 w-auto">y'(x) = 2x + 3</b>
+            <b className="bg-white rounded-lg border-black p-2 w-auto">y' = 2xy + 3</b>
+            <b className="bg-white rounded-lg border-black p-2 w-auto">dy/dx = 5xy * cos(x)</b>
+            <b className="bg-white rounded-lg border-black p-2 w-auto">dy/dx = sqrt(y) * ln(x)</b>
+          </div>
+          <br></br>
+          Se permiten distintos tipos de funciones como: <b>sin(x)</b>, <b>cos(x)</b>, <b>ln(x)</b>, <b>sqrt(x)</b> etc.
+          <br></br>
+          * Si se quiere multiplicar NO es necesario usar ningun símbolo, pero se puede indicar con <b>*</b>
+          <br></br> 
+          * Si se quiere elevar a una potencia se debe indicar con el simbolo <b>^</b>
+          <br></br>
+          * Si se quiere dividir se debe indicar con el simbolo <b>/</b>
+          <br></br>
+          * Si se quiere restar se debe indicar con el simbolo <b>-</b>
+          <br></br>
+          * Si se quiere sumar se debe indicar con el simbolo <b>+</b>
+          <br></br>
+          * Si se quiere ingresar el número pi se debe ingresar <b>pi</b>
+          <br></br>
+          * Si se quiere ingresar el número e se debe ingresar <b>e</b>
+  
+          <br></br>
+          <br></br>
+          
+          <b>Método Euler</b>
+          <br></br>
+          <br></br>
+          La calculadora funciona resolviendo las EDOs con el metodo de Euler.
+          <br></br>
+          <br></br>
+          Este método nos da una aproximación de la solución de la EDO con el valor inicial y el paso de la solucion. Se genera una tabla de valores numéricos aproximados de y para valores de x en un intervalo apropiado. Tal tabla se denomina una solución numérica del problema, mientras que el método por medio del cual generamos la tabla se denomina método numérico.
+          <br></br>
+          Dada una ecuación diferencial dy/dx = f(x, y) y una condición inicial y(x0) = y0, es posible aproximar la solución y = y(x) por medio de su linealización:
+          <br></br>
+          <br></br>
+            <b>L(x) = y(x0) + y'(x0)(x - x0)</b>
+          <br></br>
+          <br></br>
+          La función L(x) da una buena aproximación a la solución y(x) en un intervalo pequeño alrededor de x0. La base del método de Euler es colocar una cadena de linealizaciones para aproximar la curva en un espacio mayor.
+
+          <br></br>
+          <br></br>
+          <b>Referencias:</b>
+          <br></br>
+          George B. Thomas, Jr. Calculo. Una variable. ´ Pearson Educacion, 11va edition, 2006.
+          <br></br>
+          </p>
+         
+      </div>
+    </div>
+  </div>
+    )
+  }
+
   return (
     <div className="sm flex">
       <div className="h-screen wd">
-        <h1>CALCULADORA</h1>
+        <div className="flex flex-row justify-center">
+          <h1>CALCULADORA</h1>
+          <p className="text-2xl mr-8 mt-12 cursor-pointer hover:text-sky-500" onClick={() => setGuia(true)}>📄Guía</p>
+          
+        </div>
+        
+      
 
         <Form onSolve={solveEDO} />
         {solution && <Calculate formData={solution}/>}
         
       </div>
+      {guia === true && <Guia />}
 
       <div className="bg-gray-100 h-screen wd">
         <h1>EJERCICIOS PROPUESTOS</h1>
@@ -103,6 +187,8 @@ function Exercise({ paso, x0, y0, exercise}) {
   )
 }
 
+
+
 // Componente que muestra el resultado de calcular una EDO con valor inicial y paso definido por el método EULER
 function Calculate({ formData}) {
   const [result, setResult] = useState(null);
@@ -113,6 +199,7 @@ function Calculate({ formData}) {
         const response = await axios.post(`http://localhost:5000/calculate`, formData)
         .then(response => {
           console.log('Resultado:', response.data.result);
+          console.log('Resultado:', response.data.error);
           setResult(response.data.result);
          
         })
@@ -122,7 +209,7 @@ function Calculate({ formData}) {
         });
 
       } catch (error) {
-        setResult("error");
+        setResult(response.data.error);
         console.error('Error al calcular:', error);
       }
     };
@@ -132,7 +219,7 @@ function Calculate({ formData}) {
 
   const lastValue = Array.isArray(result) && result.length > 0 
     ? result[result.length - 1][1] 
-    : "No hay datos";
+    : "Error de calculo";
 
   return (
     <>
@@ -142,7 +229,7 @@ function Calculate({ formData}) {
       <h4 className="font-bold text-2xl flex-initial ml-2">{lastValue}</h4>
     
     </div>
-    <div className="space-y-2 w-2/3 mx-auto">
+    <div className="space-y-2 w-2/3 mx-auto mb-2">
       {Array.isArray(result) && result.length > 0 ? (
         result.map((subArray, index) => (
           <div key={index} className="bg-gray-100 p-2 rounded">
@@ -152,7 +239,7 @@ function Calculate({ formData}) {
           </div>
         ))
       ) : (
-        <p>No hay datos disponibles</p>
+        <p className="text-red-500">No se pudo calcular la solución.</p>
       )}
     </div>
     </>
@@ -184,13 +271,14 @@ function Form({ onSolve }) {
       <form onSubmit={handleSubmit} className="w-full bg-white shadow-md px-8 pt-6 pb-8 mb-4 rounded-xl bg-blend-color-burn backdrop-opacity-10">
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="edo">
-            Ecuación Diferencial Ordinaria (EDO)
+            Ecuación Diferencial Ordinaria (EDO): Ingresar de la forma y' = f(x, y)
           </label>
+        
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="edo"
             type="text"
-            placeholder="Ingrese la EDO (por ejemplo, 2*x*y)"
+            placeholder="Ingrese la EDO (por ejemplo, y' = 5xy * cos(x))"
             value={edo}
             onChange={(e) => setEdo(e.target.value)}
             required
